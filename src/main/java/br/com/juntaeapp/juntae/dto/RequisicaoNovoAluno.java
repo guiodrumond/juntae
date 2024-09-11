@@ -6,20 +6,20 @@ import br.com.juntaeapp.juntae.service.AlunoService;
 import jakarta.validation.constraints.NotNull;
 
 public record RequisicaoNovoAluno(
-        Long id,
-        Long matricula,
-        StatusAluno statusAluno,
+        String matricula,
         @NotNull String nome,
         String curso,
         String etapa,
         String turma
 ) {
 
+    public static RequisicaoNovoAluno defaultInstance() {
+        return new RequisicaoNovoAluno("", "", "", "", "");
+    }
+
     public Aluno toEntity(AlunoService service) {
         Aluno aluno = new Aluno();
-        aluno.setId(this.id());
-        aluno.setMatricula(this.matricula());
-        aluno.setStatusAluno(this.statusAluno());
+        aluno.setMatricula(Long.valueOf(this.matricula()));
         aluno.setNome(this.nome());
         aluno.setCurso(this.curso());
         aluno.setEtapa(this.etapa());

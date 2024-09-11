@@ -6,13 +6,14 @@ import br.com.juntaeapp.juntae.repository.AlunoRepository;
 import br.com.juntaeapp.juntae.service.AlunoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("aluno")
+@RequestMapping("alunos")
 public class AlunoController {
 
     @Autowired
@@ -22,27 +23,30 @@ public class AlunoController {
     AlunoService service;
 
     @GetMapping("cadastro")
-    public String formulario(RequisicaoNovoAluno requisicao) {
-        return "aluno/cadastro";
+    public String formulario(Model model) {
+        model.addAttribute("requisicaoNovoAluno", RequisicaoNovoAluno.defaultInstance());
+        model.addAttribute("alunos", repository.findAll());
+        return "alunos/cadastro";
     }
 
     @PostMapping("novo")
-    public ResponseEntity cadastra(@ModelAttribute @Valid RequisicaoNovoAluno form, BindingResult result) {
+    public String cadastra(@ModelAttribute @Valid RequisicaoNovoAluno form, BindingResult result, RedirectAttributes attributes) {
 
         if (result.hasFieldErrors()) {
-            return ResponseEntity.badRequest().build();
+            attributes.addFlashAttribute("errors", result.getFieldErrors());
+            return "redirect:/alunos/cadastro";
         }
 
         try {
             Aluno novoAluno = form.toEntity(service);
             service.cadastrar(novoAluno);
 
-            return ResponseEntity.ok().build();
+            attributes.addFlashAttribute("success", "Aluno cadastrado com sucesso!");
+            return "redirect:/alunos/cadastro";
 
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            attributes.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/alunos/cadastro";
         }
-
     }
-
 }
